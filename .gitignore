@@ -1,0 +1,47 @@
+# secrets
+.env
+publisher/tokens.json
+
+# runtime state and logs
+publisher/state.json
+publisher/publish.log
+studio/.*.lock
+studio/performance_notes.md
+
+# your content (keep it out of the public repo)
+scenarios/*
+!scenarios/.gitkeep
+videos/*
+!videos/.gitkeep
+out/*
+!out/.gitkeep
+approved/*
+!approved/.gitkeep
+published/*
+!published/.gitkeep
+rejected/*
+!rejected/.gitkeep
+stories/*
+!stories/.gitkeep
+stats/*
+!stats/.gitkeep
+assets/screenshots/*
+!assets/screenshots/regions.example.json
+assets/music/*
+!assets/music/.gitkeep
+assets/app_icon.png
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# fonts are downloaded by each user (see README)
+assets/fonts/*.ttf

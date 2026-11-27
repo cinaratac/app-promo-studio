@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Promo Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@font-face { font-family: Poppins; src: url(/fonts/Poppins-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Poppins; src: url(/fonts/Poppins-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Poppins; src: url(/fonts/Poppins-Bold.ttf); font-weight: 700; }
+:root { --bg:#f3f4f1; --card:#fff; --ink:#1e201e; --muted:#6b706b; --line:#e2e5df; --soft:#f7f8f5;
+        --yellow:#f0d65a; --green:#3f7d4e; --red:#b4483c; --blue:#4f7cae; --amber:#fff6dc; --amberline:#ecd48a; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:Poppins, system-ui, sans-serif; background:var(--bg); color:var(--ink); font-size:14px; }
+button, input, textarea, select { font:inherit; }
+.hl { background:linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 90%, transparent 90%); }
+
+/* ---------- top bar + flow ---------- */
+.top { position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line);
+       display:flex; align-items:center; gap:24px; padding:10px 20px; }
+.brand { font-size:19px; font-weight:700; white-space:nowrap; }
+.flow { display:flex; align-items:center; gap:4px; flex:1; flex-wrap:wrap; row-gap:4px; }
+.step { display:flex; align-items:center; gap:8px; padding:6px 11px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+        white-space:nowrap; color:var(--ink); background:none; }
+.step:hover { background:var(--soft); }
+.step.on { background:var(--ink); color:#fff; }
+.step .n { min-width:22px; height:22px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
+           font-size:12px; font-weight:700; background:#eceee9; color:var(--ink); padding:0 6px; }
+.step.on .n, .step.attn .n { background:var(--yellow); }
+.arrow { color:#b9bdb6; font-size:13px; }
+.worker { font-size:12px; color:var(--muted); white-space:nowrap; display:flex; align-items:center; gap:6px; }
+.dot { width:8px; height:8px; border-radius:50%; background:#b9bdb6; }
+.dot.run { background:#e3b21f; animation:pulse 1s infinite; }
+@keyframes pulse { 50% { opacity:.35; } }
+
+/* ---------- layout: full width ---------- */
+.shell { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:20px; padding:18px 20px 40px; }
+@media (max-width:1100px) { .shell { grid-template-columns:1fr; } }
+.toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.toolbar h2 { margin:0; font-size:18px; }
+.toolbar .desc { color:var(--muted); font-size:13px; flex-basis:100%; margin-top:-4px; }
+.toolbar .sp { flex:1; }
+.search { border:1px solid var(--line); border-radius:10px; padding:7px 10px; min-width:220px; background:#fff; }
+.btn { font-weight:600; border-radius:9px; padding:7px 13px; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--ink); white-space:nowrap; }
+.btn:hover { border-color:#c9cdc5; }
+.btn.ok { background:var(--green); color:#fff; border-color:var(--green); }
+.btn.warn { background:var(--amber); border-color:var(--amberline); }
+.btn.no { color:var(--red); }
+.btn.sm { padding:4px 10px; font-size:13px; }
+.empty { color:var(--muted); background:#fff; border:1px dashed var(--line); border-radius:14px; padding:40px; text-align:center; }
+
+/* ---------- rows (expandable) ---------- */
+.list { display:flex; flex-direction:column; gap:8px; }
+.row { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+.row.sel { outline:2px solid var(--ink); outline-offset:-1px; }
+.head { display:grid; grid-template-columns:28px 46px minmax(160px,1.4fr) minmax(120px,1fr) auto; align-items:center;
+        gap:12px; padding:10px 14px; cursor:pointer; user-select:none; }
+.head:hover { background:var(--soft); }
+.chev { width:24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:var(--muted);
+        transition:transform .15s; font-size:10px; border:1px solid var(--line); background:#fff; }
+.row.open .chev { transform:rotate(90deg); color:var(--ink); }
+.sid { font-size:12px; color:var(--muted); font-weight:600; }
+.ttl { font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ttl small { display:block; font-weight:400; color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; }
+.meta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.tag { font-size:11.5px; padding:2px 8px; border-radius:999px; background:#eef0ec; white-space:nowrap; }
+.tag.rev { background:#fbe9c6; } .tag.req { background:#dfe9f5; } .tag.err { background:#f6d9d5; color:var(--red); }
+.quick { display:flex; gap:6px; align-items:center; justify-content:flex-end; }
+.mini { width:140px; height:8px; border-radius:999px; background:#eceee9; overflow:hidden; }
+.mini div { height:100%; background:linear-gradient(90deg, var(--yellow), #e2bb36); transition:width .6s; }
+.pct { font-size:12px; font-weight:600; min-width:36px; text-align:right; }
+@media (max-width:900px) { .head { grid-template-columns:28px 1fr auto; } .sid, .meta { display:none; } }
+
+.body { display:none; border-top:1px solid var(--line); padding:16px 18px 18px; }
+.row.open .body { display:block; }
+.cols { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:24px; }
+@media (max-width:1300px) { .cols { grid-template-columns:1fr; } }
+.sec { margin-bottom:14px; }
+.sec h4 { margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; }
+.summary { margin:0 0 12px; color:#3b3f3b; }
+.lines { display:flex; flex-direction:column; gap:8px; }
+.ln { display:grid; grid-template-columns:24px 1fr; gap:8px; }
+.ln .n { font-weight:700; color:var(--muted); padding-top:6px; text-align:center; }
+.ln textarea { width:100%; font-weight:600; font-size:14.5px; border:1px solid var(--line); border-radius:9px; padding:7px 9px; resize:vertical; min-height:38px; background:var(--soft); }
+.ln .txt { font-weight:600; font-size:14.5px; padding:5px 0; }
+.vis { font-size:12.5px; color:var(--muted); margin-top:3px; }
+.small { font-size:12.5px; color:var(--muted); }
+.shots { display:flex; gap:8px; flex-wrap:wrap; }
+.shots img { height:110px; border-radius:8px; border:1px solid var(--line); background:#fafafa; }
+.videobox { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+.videobox video { width:230px; border-radius:12px; border:1px solid var(--line); background:#000; }
+.warn { background:var(--amber); border:1px solid var(--amberline); border-radius:10px; padding:8px 10px; font-size:13px; margin:6px 0; }
+.bar { position:relative; height:22px; background:#eceee9; border-radius:999px; overflow:hidden; margin:6px 0 4px; }
+.bar div { height:100%; background:linear-gradient(90deg, var(--yellow), #e2bb36); transition:width .6s; }
+.bar span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; }
+.field label { display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin:8px 0 3px; }
+.field textarea, .field input, .field select { width:100%; font-size:13.5px; border:1px solid var(--line); border-radius:9px; padding:7px 9px; background:#fff; }
+.ro { white-space:pre-wrap; font-size:13.5px; background:var(--soft); border-radius:9px; padding:8px 10px; }
+.hash { font-size:12.5px; color:var(--blue); margin-top:4px; }
+.actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; border-top:1px dashed var(--line); padding-top:12px; margin-top:6px; }
+.fb { display:none; width:100%; margin-top:8px; }
+.fb.show { display:block; }
+.fb textarea { width:100%; border:1px solid var(--amberline); border-radius:9px; padding:8px 10px; min-height:66px; }
+.hist { font-size:12.5px; color:var(--muted); margin-top:10px; }
+.hist div { margin:2px 0; } .hist b { color:var(--ink); font-weight:600; }
+details summary { cursor:pointer; color:var(--muted); font-size:13px; margin-top:10px; }
+.music { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.music audio { height:32px; }
+
+/* ---------- right column ---------- */
+aside .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:14px; }
+aside h3 { margin:0 0 6px; font-size:15px; }
+aside p.small { margin:0 0 8px; }
+aside textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:7px 9px; min-height:74px; font-size:13.5px; }
+.inline { display:flex; align-items:center; gap:8px; margin-top:8px; }
+.inline input { width:64px; border:1px solid var(--line); border-radius:8px; padding:5px 8px; text-align:center; }
+.req { font-size:12.5px; border-top:1px solid var(--line); padding:7px 0; display:flex; justify-content:space-between; gap:8px; }
+.st { font-size:11px; padding:1px 7px; border-radius:999px; background:#eef0ec; white-space:nowrap; height:fit-content; }
+.st.open { background:#fbe9c6; }
+.jingle { font-size:12.5px; margin-top:8px; } .jingle audio { width:100%; height:30px; margin-top:3px; }
+/* ---------- story ---------- */
+.stnew { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:14px; }
+.stnew h3 { margin:0 0 4px; font-size:15px; }
+.stgrid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.stgrid .wide { grid-column:span 2; } .stgrid .full { grid-column:1 / -1; }
+@media (max-width:1000px) { .stgrid { grid-template-columns:1fr 1fr; } }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.seg button { border:0; background:#fff; padding:6px 14px; cursor:pointer; font-weight:600; }
+.seg button.on { background:var(--ink); color:#fff; }
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+.chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 12px; cursor:pointer; font-size:13px; }
+.chip.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+.storybody { display:grid; grid-template-columns:240px minmax(0,1fr); gap:20px; }
+@media (max-width:900px) { .storybody { grid-template-columns:1fr; } }
+.storymedia img, .storymedia video { width:240px; border-radius:12px; border:1px solid var(--line); background:#f4f4f2; display:block; }
+.storymedia .ph { width:240px; height:426px; border-radius:12px; border:1px dashed var(--line); display:flex; align-items:center;
+                  justify-content:center; text-align:center; color:var(--muted); font-size:13px; padding:20px; background:#fafaf8; }
+.thumb { width:34px; height:60px; object-fit:cover; border-radius:6px; border:1px solid var(--line); background:#f4f4f2; display:block; }
+/* ---------- performance ---------- */
+.muted { color:var(--muted); font-size:12.5px; }
+.sth { font-size:15px; margin:18px 0 8px; }
+.stcards { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px; }
+.stgroups { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:10px; }
+.stcard { background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+.stcard .big { font-size:26px; font-weight:700; margin:2px 0; }
+.sttab { width:100%; border-collapse:collapse; margin-top:6px; font-size:13px; }
+.sttab th { text-align:left; color:var(--muted); font-weight:600; font-size:12px; padding:4px 6px; border-bottom:1px solid var(--line); }
+.sttab td { padding:6px; border-bottom:1px solid #f0f1ee; vertical-align:top; }
+.sttab.wide td { white-space:nowrap; } .sttab.wide td:nth-child(3) { white-space:normal; }
+.bar { display:inline-block; width:70px; height:8px; background:#eef0eb; border-radius:4px; margin-right:6px; vertical-align:middle; overflow:hidden; }
+.bar span { display:block; height:100%; } .bar .up { background:var(--green); } .bar .dn { background:#c9b48a; }
+.perf { font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; }
+.perf.good2 { background:#d7efd9; color:#245d33; } .perf.good { background:#eaf5e6; color:var(--green); }
+.perf.mid { background:var(--amber); color:#8a6a10; } .perf.low { background:#f8e3df; color:var(--red); }
+pre.notes { white-space:pre-wrap; font:inherit; font-size:12.5px; color:var(--muted); max-height:220px; overflow:auto; margin:6px 0 0; }
+.keys { font-size:12px; color:var(--muted); line-height:1.8; }
+kbd { font-family:inherit; font-size:11px; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:0 5px; background:#fff; }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px;
+         border-radius:999px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:50; }
+.toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><span class="hl" id="brandName">My App</span> studio</div>
+  <div class="flow" id="flow"></div>
+  <div class="worker" id="worker"><span class="dot"></span>Production idle</div>
+</div>
+
+<div class="shell">
+  <section>
+    <div class="toolbar">
+      <h2 id="tabTitle"></h2>
+      <span class="sp"></span>
+      <input class="search" id="search" placeholder="Search title, sentence or topic…" oninput="renderList()">
+      <button class="btn sm" onclick="expandAll(true)">▾ Expand all</button>
+      <button class="btn sm" onclick="expandAll(false)">▸ Collapse all</button>
+      <div class="desc" id="tabDesc"></div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <aside>
+    <div class="card">
+      <h3>Request more scenarios</h3>
+      <p class="small">Leave the topic empty for varied topics. Requests are handled within an hour (the Claude app must be running).</p>
+      <textarea id="reqText" placeholder="Optional topic. E.g.: videos about the widgets that open with 'look at your home screen'"></textarea>
+      <div class="inline"><span class="small">How many?</span><input type="number" id="reqCount" min="1" max="10" value="3">
+        <span style="flex:1"></span><button class="btn ok" onclick="sendRequest()">Request</button></div>
+      <div id="reqList" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>General note</h3>
+      <p class="small">Lasting preferences applied to all scenarios (tone, length, things to avoid…).</p>
+      <textarea id="noteText" placeholder="E.g.: Keep the hooks shorter"></textarea>
+      <div class="inline"><details style="flex:1"><summary style="margin:0">Saved notes</summary><pre class="notes" id="notes"></pre></details>
+        <button class="btn" onclick="sendNote()">Save note</button></div>
+    </div>
+    <div class="card">
+      <h3>Music</h3>
+      <p class="small">Your tracks in <code>assets/music</code>. They are ducked automatically under the voice-over.</p>
+      <div id="jingles"></div>
+    </div>
+    <div class="card">
+      <h3>Publishing</h3>
+      <div class="small" id="pubInfo"></div>
+    </div>
+    <div class="card keys">
+      <b>Keyboard shortcuts</b><br>
+      <kbd>↑</kbd> <kbd>↓</kbd> select row · <kbd>→</kbd> / <kbd>Enter</kbd> open · <kbd>←</kbd> close<br>
+      <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> switch tab · <kbd>/</kbd> search · <kbd>Esc</kbd> leave text field
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TABS = [
+  {k:"pending", l:"Scenario review", d:"New scenarios. Edit the sentences and the post text, then approve, ask for changes or reject. Approved scenarios go to production."},
+  {k:"approved", l:"Production", d:"Approved scenarios turn into videos one by one (automatically while the panel is open). 'Produce now' moves one to the front."},
+  {k:"review", l:"Video review", d:"Finished videos. Watch, listen, edit the post text. Approving sends the video to the Buffer queue right away."},
+  {k:"produced", l:"Publish queue", d:"Videos you approved, waiting to be shared by Buffer."},
+  {k:"published", l:"Published", d:"Videos shared on all platforms."},
+  {k:"revise", l:"Scenario revisions", d:"Scenarios you asked to change. Claude writes a new version on its next run and sends it back to 'Scenario review'."},
+  {k:"video_revise", l:"Video revisions", d:"Videos you asked to change. Claude changes only what you asked; unchanged scenes and audio are reused."},
+  {k:"rejected", l:"Rejected", d:"Scenarios you rejected. The reasons are taken into account for future scenarios."},
+  {k:"stories", l:"📸 Stories", d:"Instagram stories: request a photo or a short video, preview, edit and send it to Instagram (right away or via the Buffer queue)."},
+  {k:"stats", l:"📊 Performance", d:"Views and engagement of published videos (measured 3 days after posting) and which formats and openings do better."}];
+const FLOW = ["pending", "approved", "review", "produced", "published"];
+const LS = window.localStorage;
+let STATE = null, TAB = LS.getItem("tab") || "pending", SEL = null, DIRTY = false;
+const OPEN = new Set(JSON.parse(LS.getItem("open") || "[]"));
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = t => t ? new Date(t).toLocaleString(undefined, {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"}) : "";
+const $ = id => document.getElementById(id);
+function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2300); }
+function saveOpen() { LS.setItem("open", JSON.stringify([...OPEN])); }
+
+async function load() { const r = await fetch("/api/state"); STATE = await r.json(); DIRTY = false; render(); }
+async function post(url, body) {
+  const r = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body||{})});
+  if (!r.ok) { toast((await r.json().catch(() => ({}))).error || "Error"); return null; }
+  return r.json();
+}
+const count = k => k === "stats" ? (STATS ? STATS.measured : 0) : k === "stories" ? (STATE.stories||[]).filter(s => s.status === "review").length
+                                     : STATE.scenarios.filter(s => s.status === k).length;
+
+function render() {
+  const stepHtml = t => {
+    const n = count(t.k), attn = ["pending", "review", "stories"].includes(t.k) && n > 0;
+    return `<button class="step ${t.k===TAB?"on":""} ${attn?"attn":""}" onclick="setTab('${t.k}')">${t.l}<span class="n">${n}</span></button>`;
+  };
+  $("flow").innerHTML = FLOW.map(k => stepHtml(TABS.find(t => t.k === k))).join('<span class="arrow">→</span>')
+    + '<span style="width:14px;flex:none"></span>' + TABS.filter(t => !FLOW.includes(t.k)).map(stepHtml).join("");
+  const tab = TABS.find(t => t.k === TAB) || TABS[0];
+  $("tabTitle").textContent = tab.l; $("tabDesc").textContent = tab.d;
+  const bn = STATE.brand?.app_name || "My App"; $("brandName").textContent = bn; document.title = bn + " · Promo Studio";
+  renderWorker(); renderList(); renderSide();
+}
+function renderWorker() {
+  const cur = STATE.current && (STATE.scenarios.find(s => s.id === STATE.current) || (STATE.stories||[]).find(s => s.id === STATE.current));
+  const pc = cur ? (typeof cur.progress === "number" ? cur.progress : cur.progress?.pct || 0) : 0;
+  $("worker").innerHTML = cur ? `<span class="dot run"></span>producing ${esc(cur.id)} · ${Math.round(pc)}%`
+                              : `<span class="dot"></span>Production idle`;
+}
+function setTab(k) { TAB = k; LS.setItem("tab", k); SEL = null; if (k === "stats") loadStats(); render(); window.scrollTo({top:0}); }
+
+function visible() {
+  const q = ($("search").value || "").toLocaleLowerCase();
+  return STATE.scenarios.filter(s => s.status === TAB).filter(s => !q ||
+      [s.title, s.angle, s.summary, ...(s.lines||[]).map(l => l.text)].join(" ").toLocaleLowerCase().includes(q))
+    .sort((a, b) => (a.created||"").localeCompare(b.created||""));
+}
+function renderList() {
+  if (TAB === "stories") return renderStories();
+  if (TAB === "stats") return renderStats();
+  const items = visible();
+  $("list").innerHTML = items.length ? items.map(row).join("") : `<div class="empty">${{
+      pending:"No scenarios waiting for review. New ones arrive every morning; request as many as you like on the right.",
+      approved:"The production queue is empty.", review:"No videos waiting for review."}[TAB] || "Nothing here yet."}</div>`;
+}
+
+// ---------- row ----------
+function row(s) {
+  const open = OPEN.has(s.id);
+  const tags = [];
+  if (s.angle) tags.push(`<span class="tag">${esc(s.angle)}</span>`);
+  tags.push(`<span class="tag">~${s.video?.seconds || s.est_seconds || "?"} s</span>`);
+  if (s.version > 1) tags.push(`<span class="tag rev">v${s.version}</span>`);
+  if (s.request_id) tags.push(`<span class="tag req">custom request</span>`);
+  if (s.progress?.state === "error") tags.push(`<span class="tag err">error</span>`);
+  if ((s.video?.warnings||[]).length) tags.push(`<span class="tag rev">⚠ warning</span>`);
+  return `<div class="row ${open?"open":""} ${SEL===s.id?"sel":""}" id="r_${s.id}">
+    <div class="head" onclick="toggle('${s.id}')" title="Open / close">
+      <span class="chev">▶</span>
+      <span class="sid">${s.id}</span>
+      <span class="ttl">${esc(s.title)}<small>${esc((s.lines||[])[0]?.text || s.summary || "")}</small></span>
+      <span class="meta">${tags.join("")}</span>
+      <span class="quick" onclick="event.stopPropagation()">${quick(s)}</span>
+    </div>
+    <div class="body">${open ? body(s) : ""}</div>
+  </div>`;
+}
+function running(s) { const p = s.progress || {}; return p.state === "running" || STATE.current === s.id; }
+function quick(s) {
+  const p = s.progress || {};
+  switch (s.status) {
+    case "pending": return `<button class="btn sm ok" onclick="approve('${s.id}')">Approve</button>
+      <button class="btn sm warn" onclick="openFb('${s.id}')">Changes</button><button class="btn sm no" onclick="reject('${s.id}')">Reject</button>`;
+    case "approved":
+      if (running(s)) return `<div class="mini"><div style="width:${p.pct||0}%"></div></div><span class="pct">${Math.round(p.pct||0)}%</span>`;
+      return `<button class="btn sm ok" onclick="produce('${s.id}')">${p.state==="error"?"Retry":"Produce now"}</button>`;
+    case "review": return `<button class="btn sm ok" onclick="approveVideo('${s.id}')">Approve, send</button>
+      <button class="btn sm warn" onclick="openFb('v${s.id}', '${s.id}')">Changes</button>`;
+    case "produced": return `<span class="tag">in Buffer</span>`;
+    default: return "";
+  }
+}
+function body(s) {
+  const editable = s.status === "pending";
+  const lines = (s.lines||[]).map((ln, i) => `<div class="ln"><div class="n">${i+1}</div><div>
+      ${editable ? `<textarea data-sid="${s.id}" data-lid="${ln.id}" rows="1">${esc(ln.text)}</textarea>`
+                 : `<div class="txt">${hl(ln.text, ln.highlight || (ln.highlight_parts||[]).join(" "))}</div>`}
+      ${s.visual_plan && s.visual_plan[i] ? `<div class="vis">🎬 ${esc(s.visual_plan[i])}</div>` : ""}
+    </div></div>`).join("");
+  const shots = (s.screenshots||[]).map(f => `<img loading="lazy" src="/shots/${encodeURIComponent(f)}" title="${esc(f)}">`).join("");
+  const left = `${s.summary ? `<p class="summary">${esc(s.summary)}</p>` : ""}
+    <div class="sec"><h4>Scenario</h4><div class="lines">${lines}</div></div>
+    ${shots ? `<div class="sec"><h4>Screens to use</h4><div class="shots">${shots}</div></div>` : ""}`;
+  let right = "";
+  if (s.status === "approved") right += produceSec(s);
+  if (["review", "video_revise", "produced", "published"].includes(s.status) && s.video?.file) right += videoSec(s);
+  right += `<div class="sec"><h4>Music</h4>${musicRow(s)}</div>` + postSec(s);
+  const hist = (s.history||[]).map(h => `<div>${fmt(h.at)} · <b>${h.by==="user"?"You":"Claude"}</b> · ${HIST[h.type]||h.type}${h.text?": "+esc(h.text):""}</div>`).join("");
+  return `<div class="cols"><div>${left}</div><div>${right}</div></div>${actions(s)}
+    ${hist ? `<details><summary>History (${(s.history||[]).length})</summary><div class="hist">${hist}</div></details>` : ""}`;
+}
+const HIST = {approve:"approved", reject:"rejected", feedback:"asked for changes", edit:"edited the text", revision:"wrote a new version",
+  created:"wrote", produced:"produced the video", published:"published", music:"picked music", video_approve:"approved the video",
+  video_feedback:"asked for video changes", post_edit:"edited the post text", status:"note"};
+function hl(text, h) {
+  let out = esc(text);
+  (h || "").split(/\s+/).filter(Boolean).forEach(w => {
+    const c = w.replace(/[.,!?:;'"…]/g, ""); if (!c) return;
+    out = out.replace(new RegExp("(" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "i"), '<span class="hl">$1</span>');
+  });
+  return out;
+}
+function produceSec(s) {
+  const p = s.progress || {};
+  let msg;
+  if (running(s)) msg = `Producing · ${esc(p.msg || "")}`;
+  else if (p.state === "error") msg = `Error: ${esc(p.msg)}`;
+  else if (STATE.current) msg = "Queued · another video is being produced.";
+  else msg = "Queued · produced automatically while the panel is open.";
+  return `<div class="sec" id="ps_${s.id}"><h4>Production</h4><div class="small">${msg}</div>
+    ${running(s) ? `<div class="bar"><div style="width:${p.pct||0}%"></div><span>${Math.round(p.pct||0)}%</span></div>` : ""}</div>`;
+}
+function videoSec(s) {
+  const v = s.video, src = `/videos/${encodeURIComponent(v.folder)}/${encodeURIComponent(v.file)}`;
+  const warn = (v.warnings||[]).length ? `<div class="warn">⚠️ ${v.warnings.map(esc).join("<br>⚠️ ")}</div>` : "";
+  return `<div class="sec"><h4>Video</h4><div class="videobox"><video controls preload="metadata" src="${src}"></video>
+    <div style="flex:1;min-width:180px"><div class="small">${v.seconds||"?"} s · music: ${esc((STATE.music[v.music]||{}).title || "none")}</div>
+      <div class="small"><a href="/videos/${encodeURIComponent(v.folder)}/out/contact.jpg" target="_blank">Open contact sheet ↗</a></div>
+      ${warn}${s.status==="review" ? `<div class="small" style="margin-top:6px">Listen to check the voice and pronunciation.</div>` : ""}</div></div></div>`;
+}
+function musicRow(s) {
+  const M = STATE.music || {}, cur = s.music || "auto";
+  const can = ["pending", "revise", "approved"].includes(s.status);
+  const label = cur === "auto" ? "Automatic" : cur === "none" ? "No music" : (M[cur]?.title || cur);
+  const used = s.video?.music && M[s.video.music] ? ` · in video: ${esc(M[s.video.music].title)}` : "";
+  if (!can) return `<div class="small">🎵 ${esc(label)}${used}</div>`;
+  const opts = [["auto", "Automatic"], ...Object.entries(M).map(([k, v]) => [k, v.title + (v.description ? " · " + v.description : "")]), ["none", "No music"]];
+  return `<div class="music field"><select onchange="setMusic('${s.id}', this.value)">${opts.map(([k, l]) =>
+      `<option value="${k}" ${k===cur?"selected":""}>${esc(l)}</option>`).join("")}</select>
+    ${M[cur] ? `<audio controls preload="none" src="/assets/music/${cur}.wav"></audio>` : ""}</div>`;
+}
+function postSec(s) {
+  const p = s.post || {};
+  const tags = (p.hashtags||[]).map(t => "#" + t.replace(/^#/, "")).join(" ");
+  const tt = ((p.tiktok||{}).hashtags||[]).map(t => "#" + t.replace(/^#/, "")).join(" ");
+  if (s.status === "pending") return `<div class="sec field"><h4>Post text</h4>
+      <textarea id="cap_${s.id}" rows="4">${esc(p.caption)}</textarea><div class="hash">${esc(tags)}</div></div>`;
+  if (["review", "video_revise"].includes(s.status)) return `<div class="sec field"><h4>Post text · does not affect the video</h4>
+      <label>Caption (Instagram · TikTok · YouTube)</label><textarea id="pe_cap_${s.id}" rows="4">${esc(p.caption)}</textarea>
+      <label>YouTube title <span id="pe_tc_${s.id}">${(p.title||"").length}/100</span></label>
+      <input id="pe_title_${s.id}" maxlength="100" value="${esc(p.title)}" oninput="$('pe_tc_${s.id}').textContent=this.value.length+'/100'">
+      <label>Hashtags</label><input id="pe_tags_${s.id}" value="${esc(tags)}">
+      <label>TikTok hashtags <span>at most 5</span></label><input id="pe_tt_${s.id}" value="${esc(tt)}">
+      <div style="margin-top:8px"><button class="btn sm" onclick="savePost('${s.id}')">Save text</button></div></div>`;
+  return `<div class="sec"><h4>Post text</h4><div class="ro">${esc(p.caption)}</div><div class="hash">${esc(tags)}</div></div>`;
+}
+function actions(s) {
+  if (s.status === "pending") return `<div class="actions">
+      <button class="btn ok" onclick="approve('${s.id}')">Approve, send to production</button>
+      <button class="btn warn" onclick="openFb('${s.id}')">Ask for changes</button>
+      <button class="btn no" onclick="reject('${s.id}')">Reject</button>
+      <div class="fb" id="fb_${s.id}"><textarea id="fbt_${s.id}" placeholder="What should change? (E.g.: sentence 2 is too long, make the hook more intriguing)"></textarea>
+        <button class="btn warn" style="margin-top:6px" onclick="feedback('${s.id}')">Send changes</button></div></div>`;
+  if (s.status === "review") return `<div class="actions">
+      <button class="btn ok" onclick="approveVideo('${s.id}')">Approve, send to Buffer</button>
+      <button class="btn warn" onclick="openFb('v${s.id}')">Ask for video changes</button>
+      <div class="fb" id="fb_v${s.id}"><textarea id="fbt_v${s.id}" placeholder="What exactly should be fixed? (E.g.: the circle in scene 2 is on the wrong cell / a word in the last sentence is mispronounced)"></textarea>
+        <button class="btn warn" style="margin-top:6px" onclick="videoFeedback('${s.id}')">Send changes</button></div></div>`;
+  if (s.status === "approved" && !running(s)) return `<div class="actions">
+      <button class="btn ok" onclick="produce('${s.id}')">${(s.progress||{}).state==="error"?"Retry":"Produce now"}</button></div>`;
+  return "";
+}
+
+// ---------- open/close + keyboard ----------
+function toggle(id, force) {
+  const open = force ?? !OPEN.has(id);
+  open ? OPEN.add(id) : OPEN.delete(id); saveOpen();
+  const prev = SEL; SEL = id;
+  const el = $("r_" + id);
+  const st = (STATE.stories||[]).find(x => x.id === id);
+  if (el && st && TAB === "stories") el.outerHTML = storyRow(st);
+  const s = STATE.scenarios.find(x => x.id === id);
+  if (el && s && TAB !== "stories") el.outerHTML = row(s);
+  if (prev && prev !== id) $("r_" + prev)?.classList.remove("sel");
+}
+function expandAll(v) { (TAB === "stories" ? storyVisible() : visible()).forEach(s => v ? OPEN.add(s.id) : OPEN.delete(s.id)); saveOpen(); renderList(); }
+function openFb(fid, sid) {
+  const id = sid || fid.replace(/^v/, "");
+  if (!OPEN.has(id)) toggle(id, true);
+  setTimeout(() => { const f = $("fb_" + fid); if (f) { f.classList.add("show"); $("fbt_" + fid).focus(); f.scrollIntoView({block:"center", behavior:"smooth"}); } }, 30);
+}
+document.addEventListener("keydown", e => {
+  const tag = document.activeElement.tagName;
+  if (["TEXTAREA", "INPUT", "SELECT"].includes(tag)) { if (e.key === "Escape") document.activeElement.blur(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === "/") { e.preventDefault(); $("search").focus(); return; }
+  if (/^[0-9]$/.test(e.key)) { const t = TABS[(+e.key || 10) - 1]; if (t) setTab(t.k); return; }
+  const ids = TAB === "stories" ? storyVisible().map(s => s.id) : visible().map(s => s.id);
+  if (!ids.length) return;
+  const i = ids.indexOf(SEL);
+  if (e.key === "ArrowDown") SEL = ids[Math.min(ids.length - 1, i + 1)];
+  else if (e.key === "ArrowUp") SEL = ids[Math.max(0, i - 1)];
+  else if ((e.key === "ArrowRight" || e.key === "Enter") && SEL) { e.preventDefault(); toggle(SEL, true); return; }
+  else if (e.key === "ArrowLeft" && SEL) { e.preventDefault(); toggle(SEL, false); return; }
+  else return;
+  e.preventDefault();
+  document.querySelectorAll(".row.sel").forEach(r => r.classList.remove("sel"));
+  $("r_" + SEL)?.classList.add("sel"); $("r_" + SEL)?.scrollIntoView({block:"nearest"});
+});
+
+// ---------- actions ----------
+function edits(sid) {
+  const lines = {};
+  document.querySelectorAll(`textarea[data-sid="${sid}"]`).forEach(t => lines[t.dataset.lid] = t.value);
+  const cap = $("cap_" + sid);
+  return {lines, caption: cap ? cap.value : null};
+}
+async function approve(sid) { if (await post(`/api/scenario/${sid}/approve`, {edits: edits(sid)})) { toast("Approved · sent to production"); load(); } }
+async function feedback(sid) {
+  const text = $("fbt_" + sid).value; if (!text.trim()) return toast("Write what should change first");
+  if (await post(`/api/scenario/${sid}/feedback`, {text, edits: edits(sid)})) { toast("Change request saved"); load(); }
+}
+async function reject(sid) {
+  const note = prompt("Why are you rejecting it? (Optional, used for future scenarios)"); if (note === null) return;
+  if (await post(`/api/scenario/${sid}/reject`, {note})) { toast("Rejected"); load(); }
+}
+async function produce(sid) { if (await post(`/api/produce/${sid}`)) { toast("Production started"); load(); } }
+async function setMusic(sid, music) { if (await post(`/api/scenario/${sid}/music`, {music})) { toast("Music selected"); load(); } }
+function postData(sid) {
+  if (!$("pe_cap_" + sid)) return null;
+  return {caption: $("pe_cap_" + sid).value, title: $("pe_title_" + sid).value, hashtags: $("pe_tags_" + sid).value, tiktok_hashtags: $("pe_tt_" + sid).value};
+}
+async function savePost(sid, quiet) {
+  const d = postData(sid); if (!d) return true;
+  const r = await post(`/api/scenario/${sid}/post`, d);
+  if (r && !quiet) { toast("Post text saved"); load(); }
+  return !!r;
+}
+async function approveVideo(sid) {
+  if (!(await savePost(sid, true))) return;
+  const r = await post(`/api/video/${sid}/approve`);
+  if (r) { toast(r.queued ? "Approved · added to the Buffer queue" : "Approved · will be added when there is room in Buffer"); load(); }
+}
+async function videoFeedback(sid) {
+  const text = $("fbt_v" + sid).value; if (!text.trim()) return toast("Write what should be fixed first");
+  if (await post(`/api/video/${sid}/feedback`, {text})) { toast("Video change request saved"); load(); }
+}
+async function sendRequest() {
+  if (await post("/api/request", {text: $("reqText").value, count: Number($("reqCount").value) || 1})) {
+    $("reqText").value = ""; toast("Request saved · scenarios arrive within an hour"); load(); }
+}
+async function sendNote() {
+  if (await post("/api/note", {text: $("noteText").value})) { $("noteText").value = ""; toast("Note saved"); load(); }
+}
+
+// ---------- story ----------
+const ST_LABEL = {plan:"Claude will write", revise:"in revision", queued:"queued", producing:"producing", review:"needs review",
+                  sent:"sent", rejected:"dropped", error:"error"};
+const ST_FILTERS = [["active","Active"],["review","Needs review"],["work","In progress"],["sent","Sent"],["rejected","Dropped"],["all","All"]];
+const ST_TEST = {active: s => !["sent","rejected"].includes(s.status), review: s => s.status === "review",
+                 work: s => ["plan","revise","queued","producing","error"].includes(s.status), sent: s => s.status === "sent",
+                 rejected: s => s.status === "rejected", all: () => true};
+const SCREEN_LABEL = {"auto":"Automatic (mixed)"};
+const THEME_LABEL = {daily:"Daily", winter:"Winter", summer:"Summer", autumn:"Autumn", emotions:"Emotions", mixed:"Mixed"};
+let ST_FILTER = LS.getItem("stf") || "active", ST_KIND = LS.getItem("stk") || "photo";
+function storyVisible() {
+  const q = ($("search").value || "").toLocaleLowerCase();
+  return (STATE.stories||[]).filter(ST_TEST[ST_FILTER] || ST_TEST.active)
+    .filter(s => !q || [s.headline, s.sub, s.request].join(" ").toLocaleLowerCase().includes(q))
+    .sort((a, b) => (b.created||"").localeCompare(a.created||""));
+}
+const opts = (list, lab, cur) => list.map(v => `<option value="${v}" ${v===cur?"selected":""}>${esc(lab[v]||v)}</option>`).join("");
+function storyForm() {
+  const o = STATE.story_opts || {screens:[], themes:[]};
+  return `<div class="stnew">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <h3>New story</h3>
+      <div class="seg"><button class="${ST_KIND==="photo"?"on":""}" onclick="setKind('photo')">🖼 Photo</button><button class="${ST_KIND==="video"?"on":""}" onclick="setKind('video')">🎬 Short video</button></div>
+      <span class="small">${ST_KIND==="photo" ? "Single image · shown for 5 s on Instagram" : "5–15 s · live drawing + music, no voice-over"}</span>
+    </div>
+    <div class="stgrid field">
+      <div class="full"><label>What do you want? <span>Leave the story text empty and Claude writes it from this request (within an hour)</span></label>
+        <textarea id="stn_req" rows="2" placeholder="E.g.: a winter-themed story asking a friendly question like 'describe today with a snowman'"></textarea></div>
+      <div class="wide"><label>Story text (big text at the top) <span>if filled in, produced right away</span></label><input id="stn_head" maxlength="80" placeholder="E.g.: What did today look like?"></div>
+      <div><label>Highlighted word</label><input id="stn_hl" placeholder="E.g.: today"></div>
+      <div><label>Subtitle (optional)</label><input id="stn_sub" maxlength="70" placeholder="E.g.: One drawing a day."></div>
+      <div><label>Screen</label><select id="stn_screen">${opts(["auto", ...o.screens], SCREEN_LABEL, "auto")}</select></div>
+      <div><label>Doodle theme</label><select id="stn_theme">${opts(o.themes, THEME_LABEL, "daily")}</select></div>
+      <div>${ST_KIND==="video" ? `<label>Duration (s)</label><input id="stn_dur" type="number" min="5" max="15" value="8">` : ""}</div>
+      <div><label>How many?</label><div class="inline" style="margin:0"><input id="stn_count" type="number" min="1" max="10" value="1">
+        <span style="flex:1"></span><button class="btn ok" onclick="createStory()">Create</button></div></div>
+    </div></div>`;
+}
+function setKind(k) { ST_KIND = k; LS.setItem("stk", k); renderStories(); }
+function setStFilter(k) { ST_FILTER = k; LS.setItem("stf", k); renderStories(); }
+function renderStories() {
+  const keep = {};
+  ["stn_req","stn_head","stn_hl","stn_sub","stn_screen","stn_theme","stn_count"].forEach(id => { if ($(id)) keep[id] = $(id).value; });
+  const items = storyVisible();
+  const cnt = k => (STATE.stories||[]).filter(ST_TEST[k]).length;
+  $("list").innerHTML = storyForm()
+    + `<div class="chips">${ST_FILTERS.map(([k, l]) => `<button class="chip ${ST_FILTER===k?"on":""}" onclick="setStFilter('${k}')">${l} · ${cnt(k)}</button>`).join("")}</div>`
+    + (items.length ? `<div class="list">${items.map(storyRow).join("")}</div>`
+                    : `<div class="empty">No stories here. Request a photo or a short video above.</div>`);
+  Object.entries(keep).forEach(([id, v]) => { if ($(id)) $(id).value = v; });
+}
+function mediaUrl(s, f) { f = f || s.file; return f ? `/stories/${encodeURIComponent(f)}?v=${encodeURIComponent(s.updated||"")}` : ""; }
+function storyRow(s) {
+  const open = OPEN.has(s.id);
+  const tf = s.poster || (s.file && !s.file.endsWith(".mp4") ? s.file : "");
+  const th = tf ? `<img class="thumb" src="${mediaUrl(s, tf)}">` : `<span class="thumb"></span>`;
+  const tags = [`<span class="tag">${s.kind==="video" ? "🎬 video" : "🖼 photo"}</span>`,
+    `<span class="tag ${s.status==="error"?"err":s.status==="review"?"rev":""}">${ST_LABEL[s.status]||s.status}</span>`];
+  if (s.buffer?.due) tags.push(`<span class="tag">${fmt(s.buffer.due)}</span>`);
+  return `<div class="row ${open?"open":""} ${SEL===s.id?"sel":""}" id="r_${s.id}">
+    <div class="head" onclick="toggle('${s.id}')" style="grid-template-columns:28px 36px 46px minmax(160px,1.4fr) minmax(120px,1fr) auto">
+      <span class="chev">▶</span>${th}
+      <span class="sid">${s.id}</span>
+      <span class="ttl">${esc(s.headline || "(Claude will write the text)")}<small>${esc(s.request || s.sub || "")}</small></span>
+      <span class="meta">${tags.join("")}</span>
+      <span class="quick" id="stq_${s.id}" onclick="event.stopPropagation()">${storyQuick(s)}</span>
+    </div>
+    <div class="body">${open ? storyBody(s) : ""}</div></div>`;
+}
+function storyQuick(s) {
+  switch (s.status) {
+    case "review": return `<button class="btn sm ok" onclick="sendStory('${s.id}','now')">Share now</button>
+      <button class="btn sm" onclick="sendStory('${s.id}','queue')">Add to queue</button>`;
+    case "producing": return `<div class="mini"><div style="width:${s.progress||3}%"></div></div><span class="pct">${Math.round(s.progress||0)}%</span>`;
+    case "queued": return `<span class="small">queued…</span>`;
+    case "plan": case "revise": return `<span class="small">Claude will write</span>`;
+    case "error": return `<button class="btn sm ok" onclick="storyAct('${s.id}','regenerate')">Retry</button>`;
+    case "sent": return `<span class="tag">in Buffer</span>`;
+    default: return "";
+  }
+}
+function storyBody(s) {
+  const o = STATE.story_opts || {screens:[], themes:[]};
+  const ed = !["producing", "sent"].includes(s.status);
+  const media = s.file ? (s.file.endsWith(".mp4") ? `<video controls preload="metadata" ${s.poster ? `poster="${mediaUrl(s, s.poster)}"` : ""} src="${mediaUrl(s)}"></video>` : `<img src="${mediaUrl(s)}">`)
+    : `<div class="ph">${{plan:"Produced automatically once Claude writes the story text.", revise:"Re-produced once Claude writes the fix.",
+         queued:"In the production queue…", producing:"Producing…", error:esc(s.error||"Error")}[s.status] || "No preview"}</div>`;
+  const dis = ed ? "" : "disabled";
+  const f = (id, lab, v, extra="") => `<div><label>${lab}</label><input id="${id}_${s.id}" value="${esc(v)}" ${dis} ${extra}></div>`;
+  return `<div class="storybody">
+    <div class="storymedia">${media}${s.music_used ? `<div class="small" style="margin-top:6px">Music: ${esc((STATE.music||{})[s.music_used]?.title || s.music_used)}</div>` : ""}</div>
+    <div>
+      ${s.request ? `<div class="sec"><h4>Request</h4><div class="ro">${esc(s.request)}</div></div>` : ""}
+      ${s.feedback ? `<div class="warn">Your change request: ${esc(s.feedback)}</div>` : ""}
+      ${s.error && s.status !== "error" ? `<div class="warn">${esc(s.error)}</div>` : ""}
+      <div class="sec field"><h4>Story settings</h4>
+        <div class="stgrid">
+          <div class="wide">${f("se_head", "Story text", s.headline||"", 'maxlength="80"')}</div>
+          ${f("se_hl", "Highlighted word", s.highlight||"")}
+          ${f("se_sub", "Subtitle", s.sub||"", 'maxlength="70"')}
+          <div><label>Kind</label><select id="se_kind_${s.id}" ${dis}>${opts(["photo","video"], {photo:"Photo", video:"Short video"}, s.kind)}</select></div>
+          <div><label>Screen</label><select id="se_screen_${s.id}" ${dis}>${opts(o.screens, SCREEN_LABEL, s.screen)}</select></div>
+          <div><label>Doodle theme</label><select id="se_theme_${s.id}" ${dis}>${opts(o.themes, THEME_LABEL, s.theme)}</select></div>
+          ${f("se_dur", "Duration (video, s)", s.duration||8, 'type="number" min="5" max="15"')}
+        </div>
+      </div>
+      <div class="actions">
+        ${s.status==="review" ? `<button class="btn ok" onclick="sendStory('${s.id}','now')">Share on Instagram now</button>
+          <button class="btn" onclick="sendStory('${s.id}','queue')">Add to Buffer queue</button>` : ""}
+        ${ed ? `<button class="btn" onclick="saveStory('${s.id}')">Save and re-produce</button>
+          <button class="btn" onclick="storyAct('${s.id}','regenerate')">🎲 Different doodles</button>
+          <button class="btn warn" onclick="openFb('st_${s.id}', '${s.id}')">Let Claude fix it</button>
+          ${s.status!=="rejected" ? `<button class="btn no" onclick="storyAct('${s.id}','reject')">Drop</button>` : ""}` : ""}
+        ${s.status==="sent" ? `<span class="small">Buffer: ${esc(s.buffer?.status||"")} ${s.buffer?.due ? "· " + fmt(s.buffer.due) : ""}</span>` : ""}
+        <div class="fb" id="fb_st_${s.id}"><textarea id="fbt_st_${s.id}" placeholder="What should change? E.g.: a funnier question, draw a cat"></textarea>
+          <div style="margin-top:6px"><button class="btn warn" onclick="storyFeedback('${s.id}')">Ask for changes</button></div></div>
+      </div>
+      <div class="hist">${(s.history||[]).slice(-6).map(h => `<div>${fmt(h.at)} · <b>${h.by==="user"?"you":"Claude"}</b> ${esc(h.type)} ${esc(h.text||"")}</div>`).join("")}</div>
+    </div></div>`;
+}
+async function createStory() {
+  const d = {kind: ST_KIND, request: $("stn_req").value, headline: $("stn_head").value, highlight: $("stn_hl").value,
+             sub: $("stn_sub").value, screen: $("stn_screen").value, theme: $("stn_theme").value,
+             count: Number($("stn_count").value) || 1};
+  if ($("stn_dur")) d.duration = Number($("stn_dur").value) || 8;
+  const r = await post("/api/story", d);
+  if (r) {
+    ["stn_req","stn_head","stn_hl","stn_sub"].forEach(id => $(id).value = ""); $("stn_count").value = 1;
+    toast(d.headline.trim() ? "Story sent to production" : "Request saved · produced once Claude writes the text");
+    r.forEach(x => OPEN.add(x.id)); saveOpen(); ST_FILTER = "active"; load();
+  }
+}
+async function saveStory(sid) {
+  const g = k => $(k + "_" + sid).value;
+  const d = {headline: g("se_head"), highlight: g("se_hl"), sub: g("se_sub"), kind: g("se_kind"), screen: g("se_screen"),
+             theme: g("se_theme"), duration: Number(g("se_dur")) || 8};
+  if (await post(`/api/story/${sid}/edit`, d)) { toast("Saved · re-producing"); load(); }
+}
+async function storyAct(sid, act) {
+  if (act === "reject" && !confirm("Drop this story?")) return;
+  if (await post(`/api/story/${sid}/${act}`)) { toast({regenerate:"Re-producing with different doodles", reject:"Dropped"}[act] || "Done"); load(); }
+}
+async function storyFeedback(sid) {
+  const text = $("fbt_st_" + sid).value; if (!text.trim()) return toast("Write what should change first");
+  if (await post(`/api/story/${sid}/feedback`, {text})) { toast("Change request saved · Claude fixes it within an hour"); load(); }
+}
+async function sendStory(sid, mode) {
+  if (mode === "now" && !confirm("Share this story on Instagram now?")) return;
+  toast("Sending…");
+  const r = await post(`/api/story/${sid}/send`, {mode});
+  if (r) { toast(mode === "now" ? "Sent to Instagram" : "Added to the Buffer queue"); load(); }
+}
+
+// ---------- performance ----------
+let STATS = null, STF = {plat:"all", src:"all", sort:"date"};
+const PLAT = {instagram:"Instagram", tiktok:"TikTok", youtube:"YouTube"};
+const nf = v => v == null ? "–" : Number(v).toLocaleString();
+async function loadStats() { STATS = await (await fetch("/api/stats")).json(); if (TAB === "stats") render(); }
+async function statsCollect() {
+  const b = $("stBtn"); if (b) { b.disabled = true; b.textContent = "Measuring…"; }
+  const r = await post("/api/stats/collect");
+  if (r) toast(r.measured ? `${r.measured} posts measured` : "No new posts that reached day 3");
+  await loadStats();
+}
+function stSet(k, v) { STF[k] = v; render(); }
+function lbl(x) {
+  if (!x.label) return `<span class="tag">no data</span>`;
+  const c = {"great":"good2", "good":"good", "average":"mid", "weak":"low"}[x.label];
+  return `<span class="perf ${c}">${x.label}</span>`;
+}
+function renderStats() {
+  if (!STATS) { $("list").innerHTML = `<div class="empty">Loading…</div>`; loadStats(); return; }
+  const S = STATS;
+  const head = `<div class="stnew"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:260px"><h3>How is it measured?</h3>
+      <div class="muted">Each video is measured once, <b>${S.measure_days} days after</b> it was posted; old posts are not fetched again.
+      This runs by itself every day while the panel is open. <b>View index</b> = the video's views ÷ the median views on the same platform
+      (1.0 average; 2.0 twice the average). New scenarios take the results into account (as trends, not rules).</div>
+      <div class="muted" style="margin-top:4px">Last measurement: ${S.last_run ? fmt(S.last_run) : "none yet"}</div></div>
+      <button class="btn" id="stBtn" onclick="statsCollect()">Measure now</button></div></div>`;
+  const plats = `<div class="stcards">${S.platforms.map(p => `<div class="stcard"><div class="muted">${PLAT[p.platform]||p.platform}</div>
+      <div class="big">${nf(p.median_views)}</div><div class="muted">median views · ${p.n} videos</div>
+      <div class="muted">${nf(p.total_views)} views in total · engagement ${p.eng ?? "–"}%</div></div>`).join("")
+      || `<div class="empty">No posts measured yet.</div>`}</div>`;
+  const groups = S.groups.length ? `<h3 class="sth">What works better?</h3>
+    <div class="muted" style="margin:-4px 0 10px">Format and opening comparisons fill up as the studio produces more videos. Do not trust rows marked “little data”.</div>
+    <div class="stgroups">${S.groups.map(g => {
+      const mx = Math.max(2, ...g.items.map(i => i.index || 0));
+      return `<div class="stcard"><b>${esc(g.title)}</b><table class="sttab"><tr><th></th><th>index</th><th>engagement</th><th>n</th></tr>
+        ${g.items.map(i => `<tr><td>${esc(i.value)}${i.n < 3 ? ' <span class="tag">little data</span>' : ""}</td>
+          <td><div class="bar"><span style="width:${Math.min(100, 100 * (i.index || 0) / mx)}%" class="${(i.index||0) >= 1 ? "up" : "dn"}"></span></div>${i.index ?? "–"}</td>
+          <td>${i.eng != null ? i.eng + "%" : "–"}</td><td>${i.n}</td></tr>`).join("")}</table></div>`;
+    }).join("")}</div>` : "";
+  let rows = S.rows.filter(x => (STF.plat === "all" || x.platform === STF.plat) &&
+    (STF.src === "all" || (STF.src === "sys" ? x.scenario : !x.scenario)));
+  const key = {date: x => x.sent_at, views: x => x.views, index: x => x.index ?? -1, eng: x => x.eng ?? -1}[STF.sort];
+  rows = rows.slice().sort((a, b) => key(a) > key(b) ? -1 : key(a) < key(b) ? 1 : 0);
+  const chip = (k, v, l) => `<button class="chip ${STF[k] === v ? "on" : ""}" onclick="stSet('${k}','${v}')">${l}</button>`;
+  const table = `<h3 class="sth">Measured videos (${S.measured})</h3>
+    <div class="chips">${chip("plat","all","All")}${chip("plat","instagram","Instagram")}${chip("plat","tiktok","TikTok")}${chip("plat","youtube","YouTube")}
+      <span style="width:12px"></span>${chip("src","all","All videos")}${chip("src","sys","Made by the studio")}${chip("src","man","Outside the studio")}
+      <span style="width:12px"></span>${chip("sort","date","Newest")}${chip("sort","views","Views")}${chip("sort","index","Index")}${chip("sort","eng","Engagement")}</div>
+    <div class="stcard" style="overflow-x:auto"><table class="sttab wide"><tr><th>Date</th><th>Platform</th><th>Video / opening</th><th>Views</th>
+      <th>Likes</th><th>Comments</th><th>Shares</th><th>Saves</th><th>Avg. watch</th><th>Engagement</th><th>Index</th></tr>
+      ${rows.map(x => { const m = x.metrics || {}, a = x.attrs || {};
+        const what = x.scenario ? `<b>${esc(x.scenario)}</b> ${esc(x.title || "")}<div class="muted">${esc(a.format || "")} · ${esc(a.opening || "")} · “${esc((a.opening_text||"").slice(0,80))}”</div>`
+                                : `<span class="muted">outside studio</span> ${esc((x.text || "").slice(0, 70))}`;
+        return `<tr><td>${fmt(x.sent_at)}${x.late ? `<div class="muted" title="Posted before the studio was set up, so it was measured on day ${x.age_days}">day ${x.age_days}</div>` : ""}${x.stale ? '<div class="muted">stale data</div>' : ""}</td>
+          <td>${PLAT[x.platform]||x.platform}</td><td style="min-width:240px">${what}</td><td><b>${nf(x.views)}</b></td>
+          <td>${nf(m.reactions)}</td><td>${nf(m.comments)}</td><td>${nf(m.shares)}</td><td>${nf(m.saves)}</td>
+          <td>${m.averageTimeWatched ? m.averageTimeWatched.toFixed(1) + " s" : "–"}${x.ret != null ? `<div class="muted">${x.ret}% watched</div>` : ""}</td>
+          <td>${x.eng != null ? x.eng + "%" : "–"}</td><td>${lbl(x)}<div class="muted">${x.index ?? ""}</div></td></tr>`; }).join("")
+        || `<tr><td colspan="11" class="muted">No videos for this filter.</td></tr>`}</table></div>`;
+  const wait = S.waiting.length ? `<h3 class="sth">Waiting for measurement (${S.waiting.length})</h3>
+    <div class="stcard"><table class="sttab wide"><tr><th>Posted</th><th>Platform</th><th>Video</th><th>Measured on</th></tr>
+    ${S.waiting.map(x => `<tr><td>${fmt(x.sent_at)}</td><td>${PLAT[x.platform]||x.platform||""}</td>
+      <td>${x.scenario ? `<b>${esc(x.scenario)}</b> ${esc(x.title || "")}` : esc((x.text || "").slice(0, 70))}${x.note ? `<div class="muted">${esc(x.note)}</div>` : ""}</td>
+      <td>${fmt(x.measure_on)}</td></tr>`).join("")}</table></div>` : "";
+  $("list").innerHTML = head + plats + groups + table + wait;
+}
+
+// ---------- right column ----------
+function renderSide() {
+  $("reqList").innerHTML = STATE.requests.slice().reverse().slice(0, 6).map(r =>
+    `<div class="req"><span>${r.count||1} scenario(s)${r.text ? ": " + esc(r.text) : " (various topics)"}</span><span class="st ${r.status}">${r.status==="open"?"waiting":"written"}</span></div>`).join("");
+  $("notes").textContent = STATE.notes;
+  if (!$("jingles").children.length)
+    $("jingles").innerHTML = Object.entries(STATE.music || {}).map(([k, v]) =>
+      `<div class="jingle"><b>${esc(v.title)}</b>${v.description ? " · " + esc(v.description) : ""}<audio controls preload="none" src="/assets/music/${k}.wav"></audio></div>`).join("") || '<div class="small">No tracks yet. Add royalty-free .wav files you have the rights to.</div>';
+  const p = STATE.publish;
+  $("pubInfo").innerHTML = `Videos in approved/ waiting to be published: <b>${p.queue.length}</b><br>Videos published through the studio: <b>${p.published}</b>`;
+}
+
+// ---------- refresh ----------
+document.addEventListener("input", e => { if (["TEXTAREA", "INPUT"].includes(e.target.tagName) && e.target.id !== "search") DIRTY = true; });
+setInterval(async () => {
+  if (document.hidden || !STATE) return;
+  const busy = STATE.current || STATE.scenarios.some(x => x.progress && x.progress.state === "running")
+    || (STATE.stories||[]).some(x => ["queued", "producing"].includes(x.status));
+  if (!busy) return;
+  // while producing: only update counts and progress; open videos and forms stay in place
+  const n = await (await fetch("/api/state")).json();
+  const sig = x => x.scenarios.map(s => s.id + s.status).join() + "|" + (x.stories||[]).map(s => s.id + s.status).join();
+  const changed = sig(n) !== sig(STATE);
+  STATE = n;
+  if (changed && !DIRTY) return render();
+  renderWorker();
+  if (TAB === "stories") for (const s of STATE.stories) { const q = $("stq_" + s.id); if (q) q.innerHTML = storyQuick(s); }
+  for (const s of STATE.scenarios.filter(x => x.status === "approved" && TAB === "approved")) {
+    const el = $("r_" + s.id); if (!el) continue;
+    el.querySelector(".quick").innerHTML = quick(s);
+    const sec = $("ps_" + s.id); if (sec) sec.outerHTML = produceSec(s);
+  }
+}, 2000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !DIRTY) load(); });
+load(); loadStats();
+</script>
+</body>
+</html>

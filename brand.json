@@ -1,0 +1,20 @@
+{
+  "_help": "Your brand settings. See README.md > Make it yours. Keys starting with _ are ignored.",
+  "app_name": "My App",
+  "icon": "assets/app_icon.png",
+  "title_color": [45, 70, 50],
+  "background_blobs": [[238, 205, 196], [205, 228, 200], [214, 230, 214]],
+  "end_card": {"subtitle": "Now on the App Store.", "highlight": "App Store."},
+  "language": "en-US",
+  "voice": {
+    "provider": "google-tts",
+    "model": "gemini-3.8-flash-lite-tts",
+    "voice": "Kore",
+    "speed": 1.1,
+    "instructions": "Cheerful and warm, like telling a friend."
+  },
+  "story_screens": {
+    "_example_editor.png": {"crop": null, "cell": "paper", "center": [235, 540], "zoom": 1.12},
+    "_example_month.png": {"cell": null, "center": [472, 1250], "zoom": 2.5, "ring": true}
+  }
+}

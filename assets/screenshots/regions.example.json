@@ -1,0 +1,18 @@
+{
+  "_help": "Copy to regions.json and adapt. Coordinates are pixels of your original screenshot. See promovideo/regions.py.",
+  "month.png": {
+    "grid": {
+      "xs": [5, 138, 273, 406, 540, 673, 807, 940],
+      "ys": [970, 1105, 1238, 1372, 1506, 1640],
+      "count": 31,
+      "start": 3,
+      "id": "d{n}",
+      "pad": [3, 40, 3, 3],
+      "draw_pad": [10, 34, 10, 8],
+      "label": [48, 40]
+    }
+  },
+  "editor.png": {
+    "paper": {"clear": [[32, 300, 414, 670]], "draw": [70, 330, 380, 640]}
+  }
+}
